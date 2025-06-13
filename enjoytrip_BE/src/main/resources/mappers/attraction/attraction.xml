@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.trip.domain.attraction.repository.AttractionDao">
+
+	<!-- 기본 attraction 컬럼들 -->
+	<sql id="baseColumns">
+		a.id, a.content_id, a.title, a.image1, a.image2, a.map_level,
+		a.latitude, a.longitude, a.tel, a.address1, a.address2,
+		a.homepage, a.overview, a.like_count, a.sido_code, a.gugun_code, a.category_id
+	</sql>
+
+	<!-- 상세 정보용 컬럼들 (join 포함) -->
+	<sql id="detailColumns">
+		<include refid="baseColumns"/>,
+		s.id AS sido_id, s.sido_name,
+		g.id AS gugun_id, g.gugun_name,
+		c.category_name
+	</sql>
+
+	<!-- 기본 테이블 조인(카테고리만) -->
+	<sql id="baseJoins">
+		FROM attraction a
+		LEFT JOIN category c ON a.category_id = c.category_id
+	</sql>
+
+	<!-- 상세 정보용 조인 -->
+	<sql id="detailJoins">
+		FROM attraction a
+		LEFT JOIN sido s ON a.sido_code = s.sido_code
+		LEFT JOIN gugun g ON a.gugun_code = g.gugun_code AND a.sido_code = g.sido_code
+		LEFT JOIN category c ON a.category_id = c.category_id
+	</sql>
+
+	<!-- 검색 조건 -->
+	<sql id="searchCondition">
+		<where>
+			<if test="sidoCode != null">AND a.sido_code = #{sidoCode}</if>
+			<if test="gugunCode != null">AND a.gugun_code = #{gugunCode}</if>
+			<if test="categoryId != null">AND a.category_id = #{categoryId}</if>
+			<if test="minLat != null and maxLat != null">
+				AND a.latitude BETWEEN #{minLat} AND #{maxLat}
+			</if>
+			<if test="minLon != null and maxLon != null">
+				AND a.longitude BETWEEN #{minLon} AND #{maxLon}
+			</if>
+		</where>
+	</sql>
+
+	<!-- 정렬 조건 -->
+	<sql id="orderBy">
+		<if test="sort != null">
+			ORDER BY
+			<choose>
+				<when test="sort.value == 'like_count'">a.like_count DESC</when>
+				<when test="sort.value == 'created_at'">a.created_at DESC</when>
+				<otherwise>a.id DESC</otherwise>
+			</choose>
+		</if>
+	</sql>
+
+	<!-- ============= 메인 쿼리들 ============= -->
+	<select id="selectAllName" resultMap="attractionMap">
+		SELECT id, title FROM attraction;
+	</select>
+
+	<select id="selectWithPaging" resultMap="attractionMap">
+		SELECT *
+		<include refid="baseJoins"/>
+		<include refid="searchCondition" />
+		<include refid="orderBy"/>
+		LIMIT #{size} OFFSET #{offset}
+	</select>
+
+	<select id="getTotalCount">
+		SELECT count(*)
+		<include refid="baseJoins"/>
+		<include refid="searchCondition" />
+	</select>
+
+	<select id="selectList" resultMap="attractionMap">
+		SELECT *
+		<include refid="baseJoins"/>
+		<include refid="searchCondition" />
+	</select>
+
+	<select id="selectListNearby" resultMap="attractionMap">
+		SELECT * FROM attraction
+		<where>
+			latitude BETWEEN #{minLat} AND #{maxLat}
+			AND longitude BETWEEN #{minLon} AND #{maxLon}
+			<if test="categoryId!=null">AND category_id=#{categoryId} </if>
+		</where>
+		ORDER BY like_count DESC
+		LIMIT 50  <!-- 근처 검색은 최대 50개로 제한 -->
+	</select>
+
+	<select id="selectById" resultMap="attractionMap">
+		SELECT * FROM attraction
+		WHERE id=#{id}
+	</select>
+
+	<select id="selectDetail" resultMap="attractionDetailMap">
+		SELECT
+			<include refid="detailColumns"/>,
+			CASE
+				WHEN #{loginMemberId} IS NULL THEN 0
+				WHEN al.attraction_id IS NOT NULL THEN 1
+				ELSE 0
+			END AS is_liked
+		<include refid="detailJoins"/>
+		<!-- 로그인한 경우 좋아요 여부 판단-->
+		<if test="loginMemberId != null">
+			LEFT JOIN attraction_like al
+			ON al.attraction_id = a.id
+			AND al.member_id = #{loginMemberId}
+			AND al.deleted_at is null
+		</if>
+		<if test="loginMemberId == null">
+			LEFT JOIN attraction_like al
+			ON 1=0  <!-- join 안 되게 해서 무조건 NULL로 만듦 -->
+		</if>
+    	WHERE a.id=#{attractionId}
+	</select>
+
+	<update id="updateLikeCount">
+		UPDATE attraction SET like_count = #{likeCount} WHERE id=#{id}
+	</update>
+
+	<!-- 기본 정보용 -->
+	<resultMap id="attractionMap" type="AttractionRecord">
+		<id column="id" property="id"/>
+		<result column="content_id" property="contentId"/>
+		<result column="title" property="title"/>
+		<result column="image1" property="image1"/>
+		<result column="image2" property="image2"/>
+		<result column="map_level" property="mapLevel"/>
+		<result column="latitude" property="latitude"/>
+		<result column="longitude" property="longitude"/>
+		<result column="tel" property="tel"/>
+		<result column="address1" property="address1"/>
+		<result column="address2" property="address2"/>
+		<result column="homepage" property="homepage"/>
+		<result column="overview" property="overview"/>
+		<result column="like_count" property="likeCount"/>
+
+		<!-- 연관 객체 - 기본 정보만 -->
+		<association property="category" javaType="Category">
+			<id column="category_id" property="categoryId"/>
+			<result column="category_name" property="categoryName"/>
+		</association>
+	</resultMap>
+
+	<!-- 상세 정보용 (sido, gugun, 좋아요 정보 포함) -->
+	<resultMap id="attractionDetailMap" type="AttractionRecord" extends="attractionMap">
+		<result column="is_liked" property="isLiked"/>
+
+		<association property="sido" javaType="Sido">
+			<id column="sido_id" property="id"/>
+			<result column="sido_code" property="sidoCode"/>
+			<result column="sido_name" property="sidoName"/>
+		</association>
+
+		<association property="gugun" javaType="Gugun">
+			<id column="gugun_id" property="id"/>
+			<result column="sido_code" property="sidoCode"/>
+			<result column="gugun_code" property="gugunCode"/>
+			<result column="gugun_name" property="gugunName"/>
+		</association>
+	</resultMap>
+
+	<!-- 요약 정보용 -->
+	<resultMap id="attractionJoinMap" type="AttractionSummaryRecord">
+		<id column="a_id" property="id"/>
+		<result column="a_title" property="name"/>
+		<result column="a_image1" property="image"/>
+		<result column="a_latitude" property="latitude"/>
+		<result column="a_longitude" property="longitude"/>
+		<result column="a_like_count" property="likeCount"/>
+		<result column="a_address1" property="address"/>
+		<result column="a_category" property="category"/>
+	</resultMap>
+</mapper>

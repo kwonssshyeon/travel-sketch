@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.trip.domain.tripplan.repository.PlanItemDao">
+
+    <insert id="insert" parameterType="PlanItem" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO plan_item
+            (
+                description, item_order, item_type, trip_plan_day_id, attraction_id, member_place_id
+            ) VALUES (
+                #{description}, #{itemOrder}, #{itemType}, #{tripPlanDayId}, #{attractionId}, #{memberPlaceId}
+            )
+    </insert>
+
+    <insert id="insertRoute" parameterType="RouteConnection" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO route_connection
+            (
+                from_item_id, to_item_id, distance, duration
+            ) VALUES (
+                #{fromItemId}, #{toItemId}, #{distance}, #{duration}
+            )
+    </insert>
+
+    <delete id="deleteAllByIds" parameterType="java.util.List">
+        DELETE FROM plan_item
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <resultMap id="planItemMap" type="PlanItemRecord">
+        <id property="id" column="pi_id" />
+        <result property="description" column="pi_description" />
+        <result property="itemOrder" column="pi_item_order" />
+        <result property="itemType" column="pi_item_type" />
+        <result property="tripPlanDayId" column="pi_trip_plan_day_id" />
+        <result property="attractionId" column="pi_attraction_id" />
+        <result property="memberPlaceId" column="pi_member_place_id" />
+        <result property="address" column="pi_address" />
+        <result property="latitude" column="pi_latitude" />
+        <result property="longitude" column="pi_longitude" />
+        <result property="name" column="pi_name" />
+        <result property="image" column="pi_image" />
+        <result property="category" column="pi_category" />
+        <association property="routeFromPrevious" resultMap="com.ssafy.trip.domain.tripplan.repository.PlanItemDao.routeConnectionMap" />
+    </resultMap>
+
+
+    <resultMap id="routeConnectionMap" type="RouteConnectionRecord">
+        <id property="id" column="r_id" />
+        <result property="fromItemId" column="r_from_item_id" />
+        <result property="toItemId" column="r_to_item_id" />
+        <result property="distance" column="r_distance" />
+        <result property="duration" column="r_duration" />
+    </resultMap>
+</mapper>

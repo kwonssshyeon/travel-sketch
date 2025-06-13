@@ -1,0 +1,87 @@
+# ===== enjoytrip_BE =====
+enjoytrip_BE/.gitattributes
+enjoytrip_BE/HELP.md
+
+# Maven Wrapper
+!enjoytrip_BE/.mvn/wrapper/maven-wrapper.jar
+
+# Maven target folders 제외
+enjoytrip_BE/target/
+!enjoytrip_BE/**/src/main/**/target/
+!enjoytrip_BE/**/src/test/**/target/
+
+# Maven wrapper scripts
+enjoytrip_BE/mvnw.cmd
+enjoytrip_BE/mvnw
+enjoytrip_BE/.mvn
+
+# Metadata and bin
+enjoytrip_BE/.metadata
+enjoytrip_BE/bin/**
+
+# STS 관련
+enjoytrip_BE/.apt_generated
+enjoytrip_BE/.classpath
+enjoytrip_BE/.factorypath
+enjoytrip_BE/.project
+enjoytrip_BE/.settings
+enjoytrip_BE/.springBeans
+enjoytrip_BE/.sts4-cache
+
+# IntelliJ IDEA 관련
+enjoytrip_BE/.idea
+enjoytrip_BE/*.iws
+enjoytrip_BE/*.iml
+enjoytrip_BE/*.ipr
+
+# NetBeans 관련
+enjoytrip_BE/nbproject/private/
+enjoytrip_BE/nbbuild/
+enjoytrip_BE/dist/
+enjoytrip_BE/nbdist/
+enjoytrip_BE/.nb-gradle/
+enjoytrip_BE/build/
+!enjoytrip_BE/**/src/main/**/build/
+!enjoytrip_BE/**/src/test/**/build/
+
+# VS Code 관련
+enjoytrip_BE/.vscode/
+
+# Secret variables
+enjoytrip_BE/src/main/resources/application-*.properties
+enjoytrip_BE/src/main/webapp/index.html
+
+
+# ===== enjoytrip_FE =====
+enjoytrip_FE/logs
+enjoytrip_FE/*.log
+enjoytrip_FE/npm-debug.log*
+enjoytrip_FE/yarn-debug.log*
+enjoytrip_FE/yarn-error.log*
+enjoytrip_FE/pnpm-debug.log*
+enjoytrip_FE/lerna-debug.log*
+
+enjoytrip_FE/node_modules
+enjoytrip_FE/.DS_Store
+enjoytrip_FE/dist
+enjoytrip_FE/dist-ssr
+enjoytrip_FE/coverage
+enjoytrip_FE/*.local
+enjoytrip_FE/package-lock.json
+
+enjoytrip_FE/cypress/videos/
+enjoytrip_FE/cypress/screenshots/
+
+# Editor directories and files
+enjoytrip_FE/.vscode/*
+!enjoytrip_FE/.vscode/extensions.json
+enjoytrip_FE/.idea
+enjoytrip_FE/*.suo
+enjoytrip_FE/*.ntvs*
+enjoytrip_FE/*.njsproj
+enjoytrip_FE/*.sln
+enjoytrip_FE/*.sw?
+
+enjoytrip_FE/*.tsbuildinfo
+
+enjoytrip_FE/.env

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.trip.domain.attraction.repository.GugunDao">
+	
+	<select id="select">
+		select * from gugun where id = #{id}
+	</select>
+
+	<select id="selectAllBySidoId">
+		select g.* from sido s join gugun g on s.sido_code = g.sido_code where s.id = #{sidoId}
+	</select>
+
+	<select id="selectAllBySidoCode">
+		select * from gugun where sido_code = #{sidoCode}
+	</select>
+	
+</mapper>
